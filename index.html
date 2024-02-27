@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html class="h-full m-0" lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="javascript.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map App</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+      integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script
+      defer
+      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="h-full m-0">
+    <div id="map" class="absolute top-0 left-0 h-full w-full"></div>
+
+    <div class="drawer">
+      <input type="checkbox" id="drawer" class="drawer-toggle" />
+      <div class="drawer-side">
+        <label for="drawer" class="drawer-overlay"></label>
+        <aside class="bg-base-200 w-80">
+          <ul class="menu p-4 menu-compact">
+            <!-- Sidebar content here -->
+
+            <li class="flex flex-col" x-data="{open:false , isChecked:false}">
+              <div>
+                <button x-on:click="open = ! open">
+                  <i
+                    x-bind:class=" open ? 'fa-solid fa-minus' : 'fa-solid fa-plus' "
+                  ></i>
+                </button>
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm"
+                  name="sublayer"
+                  value="sublayer"
+                />
+                <span class="font-semibold capitalize">Land Map</span>
+              </div>
+              <div
+                x-show="open"
+                class="flex flex-col justify-center"
+                x-transition.scale
+                style="display: none"
+              >
+                <div class="flex justify-start items-center gap-2 w-full">
+                  <input
+                    type="checkbox"
+                    class="checkbox checkbox-sm"
+                    name="sublayer"
+                    value="sublayer2"
+                  />
+                  <span class="font-semibold capitalize">Land Cover</span>
+                </div>
+                <div class="flex justify-start items-center gap-2 w-full">
+                  <input
+                    type="checkbox"
+                    class="checkbox checkbox-sm"
+                    name="sublayer"
+                    value="sublayer3"
+                  />
+                  <span class="font-semibold capitalize">waste land</span>
+                </div>
+              </div>
+            </li>
+            <li class="">
+              <div>
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm"
+                  name="sublayer"
+                  value="sublayer1"
+                />
+                <span class="font-semibold capitalize">Base map</span>
+              </div>
+            </li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Navbar  -->
+    <div class="navbar bg-slate-900 absolute top-0 left-0 w-full">
+      <div class="flex-auto">
+        <span
+          class="tooltip tooltip-right tooltip-accent capitalize"
+          data-tip="layer panel"
+        >
+          <label
+            for="drawer"
+            class="btn btn-square btn-ghost text-white text-xl drawer-button"
+          >
+            <i class="fa-solid fa-sitemap"></i>
+          </label>
+        </span>
+      </div>
+
+      <!-- Shapes menu -->
+
+      <div class="navbar-center" x-data="{ name:'Map App' }">
+        <a
+          class="text-slate-50 normal-case text-xl font-semibold"
+          x-text="name"
+        ></a>
+      </div>
+      <div class="navbar-end text-slate-200">
+        <li
+          class="tooltip tooltip-accent tooltip-bottom font-semibold capitialize z-20"
+          data-tip="Legends"
+        >
+        <label for="my-modal-3" class="btn btn-ghost"><i class="fa-solid fa-bars"></i
+          ></label>
+        </li>
+
+        <input type="checkbox" id="my-modal-3" class="modal-toggle" />
+        <div class="modal">
+          <div class="modal-box rounded-sm relative">
+            <label
+              for="my-modal-3"
+              class="btn btn-sm btn-circle absolute right-2 top-2"
+              >✕</label
+            >
+           
+            <select name="layers" class="select select-md w-full max-w-xs text-slate-900">
+              <option disabled selected>Layers</option>
+              <option value="sublayer1" >Base</option>
+              <option value="sublayer">Land Use and Land Cover</option>
+            </select>
+
+            <div class="overflow-x-auto mt-3">
+              <table class="table w-full text-slate-900">
+              
+                <thead>
+                  <tr>
+                    <th>Sno</th>
+                    <th>Layer Name</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="temp">
+                
+                </tbody>
+              </table>
+            </div>
+
+          
+          </div>
+        </div>
+
+        <div class="dropdown dropdown-bottom dropdown-end">
+          <button
+            class="btn btn-ghost btn-circle capitalize tooltip tooltip-accent tooltip-bottom z-20"
+            data-tip="tools"
+          >
+            <i class="fa-solid fa-pen-ruler text-xl"></i>
+          </button>
+          <ul
+            id="shapes"
+            tabindex="0"
+            class="dropdown-content menu menu-horizontal  p-2 text-slate-900 shadow-xl bg-base-100 rounded-sm w-52 z-20"
+          >
+            <li
+              class="tooltip tooltip-accent tooltip-bottom font-semibold capitialize z-20 "
+              data-tip="Line"
+            >
+              <label class="relative flex justify-center items-center">
+                <input
+                  type="radio"
+                  class="opacity-0 absolute w-10 h-10 z-20"
+                  name="shapes"
+                  value="line"
+                />
+                <i class="fa-solid fa-arrows-left-right"></i>
+              </label>
+            </li>
+            <li
+              class="tooltip tooltip-accent tooltip-bottom font-semibold capitialize z-20"
+              data-tip="polygon"
+            >
+              <label class="relative">
+                <input
+                  type="radio"
+                  class="opacity-0 z-20 w-10 h-10 absolute"
+                  name="shapes"
+                  value="polygon"
+                />
+                <i class="fa-solid fa-draw-polygon"></i>
+              </label>
+            </li>
+            <li
+              class="tooltip tooltip-accent tooltip-bottom font-semibold capitialize z-20"
+              data-tip="square"
+            >
+              <label class="relative">
+                <input
+                  type="radio"
+                  class="opacity-0 z-20 w-10 h-10 absolute"
+                  name="shapes"
+                  value="square"
+                />
+                <i class="fa-solid fa-vector-square"></i>
+              </label>
+            </li>
+            <li
+              class="tooltip tooltip-accent tooltip-bottom font-semibold capitialize z-20"
+              data-tip="Pointer"
+            >
+              <label class="relative">
+                <input
+                  type="radio"
+                  class="opacity-0 z-20 w-10 h-10 absolute"
+                  name="shapes"
+                  value="point"
+                />
+                <i class="fa-solid fa-location-dot"></i>
+              </label>
+            </li>
+          </ul>
+        </div>
+
+        <!-- save button -->
+
+        <div class="dropdown dropdown-end">
+          <button
+            class="btn btn-ghost btn-circle text-xl tooltip tooltip-accent tooltip-bottom capitalize z-20"
+            data-tip="save"
+          >
+            <i class="fa-regular fa-floppy-disk"></i>
+          </button>
+          <ul
+            id="format"
+            tabindex="0"
+            class="dropdown-content menu text-slate-900 font-semibold p-2 shadow-xl bg-base-100 rounded-bo x w-40 z-20"
+          >
+            <li>
+              <label>
+                <input
+                  class="opacity-0 absolute"
+                  type="radio"
+                  name="format"
+                  value="geojson"
+                />
+                GeoJSON
+              </label>
+            </li>
+            <li>
+              <label>
+                <input
+                  class="opacity-0 absolute"
+                  type="radio"
+                  name="format"
+                  value="kml"
+                />
+                KML
+              </label>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="dropdown dropdown-end dropdown-right absolute bottom-2 left-2">
+      <button
+        class="btn btn-neutral bg-slate-900 btn-circle text-xl mr-2 shadow"
+      >
+        <i class="fa-solid fa-layer-group"></i>
+      </button>
+      <ul
+        id="layers"
+        tabindex="0"
+        class="dropdown-content menu menu-horizontal p-2 shadow-xl bg-base-100 rounded-sm w-40"
+      >
+        <li>
+          <label class="relative">
+            <input
+              type="radio"
+              class="absolute opacity-0 w-10 h-10"
+              name="layer"
+              value="base"
+            />
+            <div
+              class="avatar tooltip tooltip-top tooltip-accent"
+              data-tip="Base"
+            >
+              <div class="w-10 rounded">
+                <img
+                  src="https://res.cloudinary.com/duskdho4x/image/upload/v1665309323/map/icons/default_mr301p.png"
+                />
+              </div>
+            </div>
+          </label>
+        </li>
+        <li>
+          <label class="relative">
+            <input
+              type="radio"
+              class="absolute opacity-100 w-10 h-10"
+              name="layer"
+              value="raster"
+            />
+            <div
+              class="avatar tooltip tooltip-top tooltip-accent"
+              data-tip="Satellite"
+            >
+              <div class="w-10 rounded">
+                <img
+                  src="https://res.cloudinary.com/duskdho4x/image/upload/v1665309323/map/icons/satalite_rgr65p.png"
+                />
+              </div>
+            </div>
+          </label>
+        </li>
+      </ul>
+    </div>
+
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
